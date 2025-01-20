@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-class initialize_geoGameview(tk.Tk):
+class Initialize_GeoGameview(tk.Tk):
         def __init__(self, start_size):
             super().__init__()
             self.title('Geogame')
@@ -83,7 +83,8 @@ class SizeNotifier:
 
 
 
-app = initialize_geoGameview((800,600))
+app = Initialize_GeoGameview((800,600))
+
 
 
 
