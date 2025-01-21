@@ -66,3 +66,6 @@ cities = [
         "photo_url": "Images/San_Francisco.jpg"
     }
 ]
+
+
+
