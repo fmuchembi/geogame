@@ -123,25 +123,69 @@ class Initialize_GeoGameview(tk.Tk):
 
     def create_large_layout(self):
         self.frame.pack_forget()
-
         self.frame = ttk.Frame(self)
+
+        style = ttk.Style()
+        style.configure('Title.TLabel', font=('Helvetica', 12, 'bold'))
+        style.configure('Description.TLabel', font=('Helvetica', 12))
+
+
         self.frame.columnconfigure(0, weight=3)
         self.frame.columnconfigure(1, weight=7)
-        self.frame.rowconfigure(0, weight=1)
+    
 
-        self.frame.pack(expand=True, fill='both')
-        image_path = "Images\Capetown.jpg"  
-        image = Image.open(image_path)
-        image = image.resize((500, 300)) 
-        photo = ImageTk.PhotoImage(image)
+        self.frame.pack(expand=True, fill='both', padx=20, pady=20)
 
-        image_label = ttk.Label(self.frame, image=photo)
-        image_label.image = photo 
-        image_label.grid(row=0, column=0, padx=10, pady=5, sticky="nsew")  
+        left_frame = ttk.Frame(self.frame, padding="10")
+        left_frame.grid(row=0, column=0, sticky="nsew")
+        
+        for i in range(4):
+            left_frame.rowconfigure(i, weight=1)
+        
+        heading_label = ttk.Label(
+            left_frame, 
+            text="Photo Frame Heading", 
+            style='Title.TLabel',
+            wraplength=400
+        )
+        heading_label.grid(row=0, pady=(0, 20), sticky="nw")
 
-       
-        map_widget = tkintermapview.TkinterMapView(self.frame, width=800, height=600)
-        map_widget.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")  
+        random_city = current_random_city(selected_cities)
+        
+        image_frame = ttk.Frame(left_frame, padding=2)
+        image_frame.grid(row=1, sticky="nsew", pady=(0, 20))
+        display_city_image(image_frame, random_city)
+        
+        # Description with better formatting
+        paragraph_label = ttk.Label(
+            left_frame,
+            text="This is a description or paragraph explaining the content of the image.",
+            style='Description.TLabel',
+            wraplength=400,
+            justify="left"
+        )
+        paragraph_label.grid(row=2, pady=(0, 20), sticky="nw")
+        
+        button = tk.Button(
+            left_frame, 
+            text="Click Me!",
+            font=('Helvetica', 12),
+            bg='#2196F3',
+            fg='white',
+            width=20,
+            height=2,
+            relief='flat',
+            cursor='hand2'
+        )
+        button.grid(row=3, pady=(0, 20), sticky="nw")
+            
+        map_widget = tkintermapview.TkinterMapView(
+            self.frame, 
+            width=800, 
+            height=600,
+            corner_radius=0
+            )
+        map_widget.grid(row=0, column=1, sticky="nsew", padx=(20, 0))  
         map_widget.set_position(20, 0)  
         map_widget.set_zoom(2)
 
