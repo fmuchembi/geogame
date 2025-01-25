@@ -53,7 +53,7 @@
         "type": "Feature",
         "properties": {
           "name": "New York",
-          "country": "USA",
+          "country": "United States",
           "photo_url": "Images/New_york.jpg"
         },
         "geometry": {
@@ -125,8 +125,8 @@
         "type": "Feature",
         "properties": {
           "name": "San Francisco",
-          "country": "USA (California)",
-          "photo_url": "Images/San_Francisco.jpg"
+          "country": "United States",
+          "photo_url": "Images/SanFrancisco.jpg"
         },
         "geometry": {
           "type": "Point",
