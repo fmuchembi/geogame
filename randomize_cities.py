@@ -1,7 +1,6 @@
 import random
 import json
 from PIL import Image, ImageTk
-import tkinter as tk
 from tkinter import ttk
 
 
