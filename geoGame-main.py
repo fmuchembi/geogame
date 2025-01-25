@@ -1,20 +1,21 @@
 import tkinter as tk
 from tkinter import ttk
 import tkintermapview
-from PIL import Image, ImageTk
-from load_world_countries import add_countries_polygons
+import json
 from randomize_cities import current_random_city, display_city_image
 
 
 
-world_countries = r"C:\Users\Faith\Desktop\msc_geoinformatics\Introduction_to_software_programming\geogame\data\world_countries.geojson"
-selected_cities  = r"C:\Users\Faith\Desktop\msc_geoinformatics\Introduction_to_software_programming\geogame\data\cities.geojson"
+world_countries = r"data\world_countries.geojson"
+selected_cities  = r"data\cities.geojson"
 
 class Initialize_GeoGameview(tk.Tk):
     def __init__(self, start_size):
         super().__init__()
         self.title('Geogame')
         self.geometry(f'{start_size[0]}x{start_size[1]}')
+
+        self.random_city = current_random_city(selected_cities)
 
         self.frame = ttk.Frame(self)
         self.frame.pack(expand=True, fill='both')
@@ -23,119 +24,87 @@ class Initialize_GeoGameview(tk.Tk):
             self,
             {
                 600: self.create_medium_layout,
-                #300: self.create_small_layout,
                 1200: self.create_large_layout
             })
 
         self.mainloop()
 
-    '''def create_small_layout(self):
-        self.frame.pack_forget()
-        self.frame = ttk.Frame(self)
 
-        image_path = "Images\Capetown.jpg"  
-        image = Image.open(image_path)
-        image = image.resize((500, 300))  
-        photo = ImageTk.PhotoImage(image)
-
+    def on_button_click(self):
+        self.random_city = current_random_city(selected_cities)
+        self.update_city_image()
+        self.paragraph_label.config(text="")
         
-        image_label = ttk.Label(self.frame, image=photo)
-        image_label.image = photo 
-        image_label.pack(expand=True, fill='both', padx=10, pady=5)
+        print("Button clicked! New city generated.")
 
-       
-        map_widget = tkintermapview.TkinterMapView(self.frame, width=800, height=600)
-        map_widget.pack(expand=True, fill='both', padx=10, pady=5)
-        map_widget.set_position(20, 0)  
-        map_widget.set_zoom(2)
+    def update_city_image(self):
+        for widget in self.image_frame.winfo_children():
+            widget.destroy()
+        
+        display_city_image(self.image_frame, self.random_city)
 
-
+    def polygon_click(self, polygon):
+        if self.random_city:
+            if self.random_city['country'].lower() == polygon.name.lower():
+                self.paragraph_label.config(text=f"Yeey! {self.random_city['name']} is indeed in {polygon.name}")
+            else:
+                self.paragraph_label.config(text=f"Noo fail! {self.random_city['name']} is in {self.random_city['country']}, not {polygon.name}")
     
-        add_countries_polygons(map_widget, world_countries)
-        self.frame.pack(expand=True, fill='both')'''
+
+    def add_countries_polygons(self, map_widget, geojson_file):
+        try:
+            with open(geojson_file, "r") as file:
+                geojson_data = json.load(file)
+        except FileNotFoundError:
+            print(f"Error: The file '{geojson_file}' was not found.")
+            return
+        except json.JSONDecodeError:
+            print(f"Error: The file '{geojson_file}' is not a valid GeoJSON file.")
+            return
+
+        for feature in geojson_data.get("features", []):
+            geometry = feature.get("geometry", {})
+            properties = feature.get("properties", {})
+            country_name = properties.get("name", "Unknown")
+            iso_name = properties.get("iso_a3", "Unknown")
+            try:
+                if geometry.get("type") == "MultiPolygon":
+                    for polygon in geometry.get("coordinates", []):
+                        coords = polygon[0]  
+                        centroid_lon = sum(coord[0] for coord in coords) / len(coords)
+                        centroid_lat = sum(coord[1] for coord in coords) / len(coords)
+                        polygon_coords = [(coord[1], coord[0]) for coord in coords]
+                        if polygon_coords:
+                            map_widget.set_polygon(
+                                polygon_coords,
+                                outline_color="gray",
+                                fill_color="lightblue",
+                                border_width=0.5,
+                                command=self.polygon_click,
+                                name=country_name
+                            )
+                ##polygon.bind("<Button-1>", lambda event, name=country_name: print(f"Clicked on: {name}"))
+            except Exception as e:
+                print(f"Error processing {iso_name}: {str(e)}")
 
     def create_medium_layout(self):
-        self.frame.pack_forget()
-        self.frame = ttk.Frame(self)
-
-        style = ttk.Style()
-        style.configure('Title.TLabel', font=('Helvetica', 12, 'bold'))
-        style.configure('Description.TLabel', font=('Helvetica', 12))
-
-        self.frame.columnconfigure(0, weight=3)
-        self.frame.columnconfigure(1, weight=7)
-    
-
-        self.frame.pack(expand=True, fill='both', padx=20, pady=20)
-        left_frame = ttk.Frame(self.frame, padding="10")
-        left_frame.grid(row=0, column=0, sticky="nsew")
-        
-        for i in range(4):
-            left_frame.rowconfigure(i, weight=1)
-        
-        heading_label = ttk.Label(
-            left_frame, 
-            text="Photo Frame Heading", 
-            style='Title.TLabel',
-            wraplength=400
-        )
-        heading_label.grid(row=0, pady=(0, 20), sticky="nw")
-
-        random_city = current_random_city(selected_cities)
-        image_frame = ttk.Frame(left_frame, padding=2)
-        image_frame.grid(row=1, sticky="nsew", pady=(0, 20))
-        display_city_image(image_frame, random_city)
-        
-        paragraph_label = ttk.Label(
-            left_frame,
-            text="photo.",
-            style='Description.TLabel',
-            wraplength=400,
-            justify="left"
-        )
-        paragraph_label.grid(row=2, pady=(0, 20), sticky="nw")
-        
-        button = tk.Button(
-            left_frame, 
-            text="Click Me!",
-            font=('Helvetica', 12),
-            bg='#2196F3',
-            fg='white',
-            width=20,
-            height=2,
-            relief='flat',
-            cursor='hand2'
-        )
-        button.grid(row=3, pady=(0, 20), sticky="nw")
-        
-        map_widget = tkintermapview.TkinterMapView(
-            self.frame, 
-            width=800, 
-            height=600, 
-            corner_radius=0
-            )
-        map_widget.grid(row=0, column=1, sticky="nsew", padx=(20, 0))  
-        map_widget.set_position(20, 0)  
-        map_widget.set_zoom(2)
-
-        add_countries_polygons(map_widget, world_countries)
-
+       self._create_layout()
 
     def create_large_layout(self):
+        self._create_layout()
+
+    def _create_layout(self):
         self.frame.pack_forget()
         self.frame = ttk.Frame(self)
-
+        
         style = ttk.Style()
         style.configure('Title.TLabel', font=('Helvetica', 12, 'bold'))
         style.configure('Description.TLabel', font=('Helvetica', 12))
-
-
+        
         self.frame.columnconfigure(0, weight=3)
         self.frame.columnconfigure(1, weight=7)
-    
-
         self.frame.pack(expand=True, fill='both', padx=20, pady=20)
-
+        
         left_frame = ttk.Frame(self.frame, padding="10")
         left_frame.grid(row=0, column=0, sticky="nsew")
         
@@ -144,54 +113,58 @@ class Initialize_GeoGameview(tk.Tk):
         
         heading_label = ttk.Label(
             left_frame, 
-            text="Photo Frame Heading", 
+            text="How well do you know the world!!!!!", 
             style='Title.TLabel',
             wraplength=400
         )
         heading_label.grid(row=0, pady=(0, 20), sticky="nw")
-
-        random_city = current_random_city(selected_cities)
         
-        image_frame = ttk.Frame(left_frame, padding=2)
-        image_frame.grid(row=1, sticky="nsew", pady=(0, 20))
-        display_city_image(image_frame, random_city)
+        self.image_frame = ttk.Frame(left_frame, padding=2)
+        self.image_frame.grid(row=1, sticky="nsew", pady=(0, 20))
+        display_city_image(self.image_frame, self.random_city)
         
-        # Description with better formatting
-        paragraph_label = ttk.Label(
+        self.paragraph_label = ttk.Label(
             left_frame,
-            text="This is a description or paragraph explaining the content of the image.",
+            text=' ',
             style='Description.TLabel',
             wraplength=400,
             justify="left"
         )
-        paragraph_label.grid(row=2, pady=(0, 20), sticky="nw")
+        self.paragraph_label.grid(row=2, pady=(0, 20), sticky="nw")
         
         button = tk.Button(
             left_frame, 
-            text="Click Me!",
+            text="Continue!",
             font=('Helvetica', 12),
             bg='#2196F3',
             fg='white',
             width=20,
             height=2,
             relief='flat',
-            cursor='hand2'
+            cursor='hand2',
+            command=self.on_button_click  
         )
         button.grid(row=3, pady=(0, 20), sticky="nw")
-            
+
+        country_name_label = ttk.Label(
+        self.frame, 
+        text="Country Name",
+        style='Description.TLabel'
+         )
+        country_name_label.grid(row=0, column=1, sticky="nw", padx=(20, 0), pady=10)
+        
         map_widget = tkintermapview.TkinterMapView(
-            self.frame, 
-            width=800, 
+            self.frame,
+            width=800,
             height=600,
             corner_radius=0
-            )
-        map_widget.grid(row=0, column=1, sticky="nsew", padx=(20, 0))  
-        map_widget.set_position(20, 0)  
-        map_widget.set_zoom(2)
+        )
 
-        add_countries_polygons(map_widget, world_countries)
-        self.frame.pack(expand=True, fill='both')
-
+        map_widget.grid(row=0, column=1, sticky="nsew", padx=(20, 0))
+        map_widget.set_position(20, 0)
+        map_widget.set_zoom(1)
+        
+        self.add_countries_polygons(map_widget, world_countries)
 
 class SizeNotifier:
     def __init__(self, window, size_dict):
