@@ -9,7 +9,7 @@ from randomize_cities import current_random_city, display_city_image
 world_countries = r"data\world_countries.geojson"
 selected_cities  = r"data\cities.geojson"
 
-class Initialize_GeoGameview(tk.Tk):
+class InitializeGeoGameview(tk.Tk):
     def __init__(self, start_size):
         super().__init__()
         self.title('Geogame')
@@ -35,7 +35,7 @@ class Initialize_GeoGameview(tk.Tk):
         self.update_city_image()
         self.paragraph_label.config(text="")
         
-        print("Button clicked! New city generated.")
+        #print("Button clicked! New city generated.")
 
     def update_city_image(self):
         for widget in self.image_frame.winfo_children():
@@ -194,4 +194,4 @@ class SizeNotifier:
                 self.size_dict[self.current_min_size]()
 
 
-app = Initialize_GeoGameview((800, 600))
+app = InitializeGeoGameview((800, 600))
