@@ -2,14 +2,14 @@ import tkinter as tk
 from tkinter import ttk
 import tkintermapview
 import json
-from randomize_cities import current_random_city, display_city_image
+from helpers import current_random_city, display_city_image
 
 
 
 world_countries = r"data\world_countries.geojson"
 selected_cities  = r"data\cities.geojson"
 
-class InitializeGeoGameview(tk.Tk):
+class InitializeGeoGame(tk.Tk):
     def __init__(self, start_size):
         super().__init__()
         self.title('Geogame')
@@ -33,7 +33,7 @@ class InitializeGeoGameview(tk.Tk):
     def on_button_click(self):
         self.random_city = current_random_city(selected_cities)
         self.update_city_image()
-        self.paragraph_label.config(text="")
+        self.paragraph_label.config(text="Click the country of city photo above to play'")
         
         #print("Button clicked! New city generated.")
 
@@ -71,8 +71,6 @@ class InitializeGeoGameview(tk.Tk):
                 if geometry.get("type") == "MultiPolygon":
                     for polygon in geometry.get("coordinates", []):
                         coords = polygon[0]  
-                        centroid_lon = sum(coord[0] for coord in coords) / len(coords)
-                        centroid_lat = sum(coord[1] for coord in coords) / len(coords)
                         polygon_coords = [(coord[1], coord[0]) for coord in coords]
                         if polygon_coords:
                             map_widget.set_polygon(
@@ -83,17 +81,16 @@ class InitializeGeoGameview(tk.Tk):
                                 command=self.polygon_click,
                                 name=country_name
                             )
-                ##polygon.bind("<Button-1>", lambda event, name=country_name: print(f"Clicked on: {name}"))
             except Exception as e:
                 print(f"Error processing {iso_name}: {str(e)}")
 
     def create_medium_layout(self):
-       self._create_layout()
+       self.create_layout()
 
     def create_large_layout(self):
-        self._create_layout()
+        self.create_layout()
 
-    def _create_layout(self):
+    def create_layout(self):
         self.frame.pack_forget()
         self.frame = ttk.Frame(self)
         
@@ -125,7 +122,7 @@ class InitializeGeoGameview(tk.Tk):
         
         self.paragraph_label = ttk.Label(
             left_frame,
-            text=' ',
+            text='Click the country of city photo above to play',
             style='Description.TLabel',
             wraplength=400,
             justify="left"
@@ -134,7 +131,7 @@ class InitializeGeoGameview(tk.Tk):
         
         button = tk.Button(
             left_frame, 
-            text="Continue!",
+            text="Continue!!",
             font=('Helvetica', 12),
             bg='#2196F3',
             fg='white',
@@ -145,13 +142,6 @@ class InitializeGeoGameview(tk.Tk):
             command=self.on_button_click  
         )
         button.grid(row=3, pady=(0, 20), sticky="nw")
-
-        country_name_label = ttk.Label(
-        self.frame, 
-        text="Country Name",
-        style='Description.TLabel'
-         )
-        country_name_label.grid(row=0, column=1, sticky="nw", padx=(20, 0), pady=10)
         
         map_widget = tkintermapview.TkinterMapView(
             self.frame,
@@ -194,4 +184,4 @@ class SizeNotifier:
                 self.size_dict[self.current_min_size]()
 
 
-app = InitializeGeoGameview((800, 600))
+app = InitializeGeoGame((800, 600))
